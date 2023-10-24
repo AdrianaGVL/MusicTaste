@@ -116,7 +116,7 @@ for (i in 1:(length(dfs_list) - 3)) {
                 length(ids_in_common), "\n")
 
             num_rows <- list(length(id1), length(id2), length(id3), length(id4))
-            index_fewer_rows <- which.min(numRows)
+            index_fewer_rows <- which.min(num_rows)
             for (t in 1:in_common_count) {
               if (index_fewer_rows == 1) {
                 dfs_list[[j]] <- rows_remove(dfs_list[[j]],
@@ -200,7 +200,7 @@ for (i in 1:(length(dfs_list) - 2)) {
           in_common_list_3by3[[trio_tag]] <- ids_in_common
 
           num_rows <- list(length(id1), length(id2), length(id3))
-          index_fewer_rows <- which.min(numRows)
+          index_fewer_rows <- which.min(num_rows)
           for (t in 1:in_common_count) {
             if (index_fewer_rows == 1) {
               dfs_list[[j]] <- rows_remove(dfs_list[[j]],
@@ -265,8 +265,8 @@ for (i in 1:(length(dfs_list) - 1)) {
     in_common_list_2by2[[pair_tag]] <- ids_in_common
     in_common_counts[[pair_tag]] <- in_common_count
 
-		num_rows <- list(length(id1), length(id2))
-    index_fewer_rows <- which.min(numRows)
+    num_rows <- list(length(id1), length(id2))
+    index_fewer_rows <- which.min(num_rows)
     if (in_common_count > 0) {
       for (t in 1:in_common_count) {
         if (index_fewer_rows == 1) {
