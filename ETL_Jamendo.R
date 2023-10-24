@@ -264,6 +264,9 @@ for (i in 1:(length(dfs_list) - 1)) {
     pair_tag <- paste(dfs_names[i], " & ", dfs_names[j])
     in_common_list_2by2[[pair_tag]] <- ids_in_common
     in_common_counts[[pair_tag]] <- in_common_count
+
+		num_rows <- list(length(id1), length(id2))
+    index_fewer_rows <- which.min(numRows)
     if (in_common_count > 0) {
       for (t in 1:in_common_count) {
         if (index_fewer_rows == 1) {
