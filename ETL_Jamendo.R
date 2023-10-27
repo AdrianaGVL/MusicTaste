@@ -88,9 +88,12 @@ ggsave("Songs_per_Genre.png", plot = g, width = 8, height = 6, units = "in")
 
 # # Compare one many songs from each genre are also in other genres
 # ## All of them
-# ids_list <- lapply(dfs_list, function(df) unique(df$TRACK_ID))
-# common_ids <- Reduce(intersect, ids_list)
-# # cat("The quantity of tracks in common is:", length(common_ids), "\n")
+# ids_list <- lapply(dfs_list,
+#                    function(df) unique(df$TRACK_ID))
+# common_ids <- Reduce(intersect,
+#                      ids_list)
+# # cat("The quantity of tracks in common is:",
+#        length(common_ids), "\n")
 
 ## Four by four
 in_common_counts <- list()
@@ -320,3 +323,27 @@ g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("Songs_per_Genre_cleaning.png",
        plot = g, width = 8, height = 6, units = "in")
+
+
+# Once the data is cleaned, the songs are selected.
+# In this case 167 songs will be chosen,
+# so our classification training dataset will have 1002 songs
+n_tracks <- 166
+p_random_index <- sample(1:nrow(pop_df), n_tracks, replace = FALSE)
+pop_training <- pop_df[p_random_index, ]
+write.table(pop_training, file = "new_data/classify_pop_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+t_random_index <- sample(1:nrow(techno_df), n_tracks, replace = FALSE)
+techno_training <- techno_df[t_random_index, ]
+write.table(techno_training, file = "new_data/classify_techno_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+d_random_index <- sample(1:nrow(dance_df), n_tracks, replace = FALSE)
+dance_training <- dance_df[d_random_index, ]
+write.table(dance_training, file = "new_data/classify_dance_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+a_random_index <- sample(1:nrow(alternative_df), n_tracks, replace = FALSE)
+alternative_training <- alternative_df[a_random_index, ]
+write.table(alternative_training, file = "new_data/classify_alternative_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+r_random_index <- sample(1:nrow(rock_df), n_tracks, replace = FALSE)
+rock_training <- rock_df[r_random_index, ]
+write.table(rock_training, file = "new_data/classify_rock_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+c_random_index <- sample(1:nrow(classical_df), n_tracks, replace = FALSE)
+classical_training <- classical_df[c_random_index, ]
+write.table(classical_training, file = "new_data/classify_classical_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
