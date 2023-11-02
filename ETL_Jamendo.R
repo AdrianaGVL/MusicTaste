@@ -22,7 +22,8 @@ col_header <- c("TRACK_ID", "ARTIST_ID", "ALBUM_ID", "PATH", "DURATION", "TAGS")
 # ######################################
 # # JUST IN CASE TSV FILES HAS \t or " "
 # tsv_path <- "original_file.tsv"
-# df <- read_tsv(tsv_path, col_names = col_header, col_types = col_struct)
+# df <- read_tsv(tsv_path,
+#                col_names = col_header, col_types = col_struct)
 # df$TAGS <- gsub("[\r\n]+|\\s+", ", ", df$TAGS) # Changes \t and " " to ", "
 # write.table(df, file = "clean_file.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 # #######################################
@@ -70,7 +71,8 @@ dfs_names <- list("Pop", "Techno", "Dance", "Alternative", "Rock", "Classical")
 
 # Chart with songs per genre
 genres_df <- data.frame(DataFrame = unlist(dfs_names),
-                        CommonIDs = sapply(dfs_list, function(df) length(unique(df$TRACK_ID))))
+                        CommonIDs = sapply(dfs_list,
+                        function(df) length(unique(df$TRACK_ID))))
 g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
   geom_bar(stat = "identity") +
   geom_text(aes(label = CommonIDs), vjust = -0.5, size = 4) +
@@ -308,7 +310,8 @@ ggsave("tracks_in_common_2by2_cleaning.png",
 
 # Chart with songs per genre
 genres_df <- data.frame(DataFrame = unlist(dfs_names),
-                        CommonIDs = sapply(dfs_list, function(df) length(unique(df$TRACK_ID))))
+                        CommonIDs = sapply(dfs_list,
+                        function(df) length(unique(df$TRACK_ID))))
 g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
   geom_bar(stat = "identity") +
   geom_text(aes(label = CommonIDs), vjust = -0.5, size = 4) +
@@ -322,28 +325,18 @@ g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
   theme(legend.position = "none") +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("Songs_per_Genre_cleaning.png",
-       plot = g, width = 8, height = 6, units = "in")
+       plot = g, width = 8, height = 6, units = "in")s
 
 
 # Once the data is cleaned, the songs are selected.
-# In this case 167 songs will be chosen,
+# In this case 166 songs will be chosen,
 # so our classification training dataset will have 1002 songs
 n_tracks <- 166
-p_random_index <- sample(1:nrow(pop_df), n_tracks, replace = FALSE)
-pop_training <- pop_df[p_random_index, ]
-write.table(pop_training, file = "new_data/classify_pop_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
-t_random_index <- sample(1:nrow(techno_df), n_tracks, replace = FALSE)
-techno_training <- techno_df[t_random_index, ]
-write.table(techno_training, file = "new_data/classify_techno_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
-d_random_index <- sample(1:nrow(dance_df), n_tracks, replace = FALSE)
-dance_training <- dance_df[d_random_index, ]
-write.table(dance_training, file = "new_data/classify_dance_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
-a_random_index <- sample(1:nrow(alternative_df), n_tracks, replace = FALSE)
-alternative_training <- alternative_df[a_random_index, ]
-write.table(alternative_training, file = "new_data/classify_alternative_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
-r_random_index <- sample(1:nrow(rock_df), n_tracks, replace = FALSE)
-rock_training <- rock_df[r_random_index, ]
-write.table(rock_training, file = "new_data/classify_rock_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
-c_random_index <- sample(1:nrow(classical_df), n_tracks, replace = FALSE)
-classical_training <- classical_df[c_random_index, ]
-write.table(classical_training, file = "new_data/classify_classical_chosen.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+
+for (i in 1:(length(dfs_list))){
+  random_index <- sample(1:nrow(dfs_list[[i]]), n_tracks, replace = FALSE)
+  training_dataset <- dfs_list[[i]][random_index, ]
+  file_name <- paste("new_data/", dfs_names[[i]], "_training.tsv", sep = "")
+  write.table(training_dataset,
+              file = file_name, sep = "\t", row.names = FALSE, quote = FALSE)
+}
