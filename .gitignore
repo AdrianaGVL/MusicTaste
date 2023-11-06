@@ -1,2 +1,3 @@
-new_data/
-test_ETL.R
+EDA_ETL/new_data/
+EDA_ETL/test_ETL.R
+Music_Taste.pdf
