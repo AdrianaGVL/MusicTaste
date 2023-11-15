@@ -69,23 +69,23 @@ dfs_list <- list(pop_df, techno_df,
                  rock_df, classical_df)
 dfs_names <- list("Pop", "Techno", "Dance", "Alternative", "Rock", "Classical")
 
-# Chart with songs per genre
-genres_df <- data.frame(DataFrame = unlist(dfs_names),
-                        CommonIDs = sapply(dfs_list,
-                        function(df) length(unique(df$TRACK_ID))))
-g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
-  geom_bar(stat = "identity") +
-  geom_text(aes(label = CommonIDs), vjust = -0.5, size = 4) +
-  theme_minimal() +
-  labs(
-    title = "Quantity of tracks per genre",
-    x = "Genres",
-    y = "Quantity of tracks in common"
-  ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  theme(legend.position = "none") +
-  theme(plot.title = element_text(hjust = 0.5))
-ggsave("Songs_per_Genre.png", plot = g, width = 8, height = 6, units = "in")
+# # Chart with songs per genre
+# genres_df <- data.frame(DataFrame = unlist(dfs_names),
+#                         CommonIDs = sapply(dfs_list,
+#                         function(df) length(unique(df$TRACK_ID))))
+# g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
+#   geom_bar(stat = "identity") +
+#   geom_text(aes(label = CommonIDs), vjust = -0.5, size = 4) +
+#   theme_minimal() +
+#   labs(
+#     title = "Quantity of tracks per genre",
+#     x = "Genres",
+#     y = "Quantity of tracks in common"
+#   ) +
+#   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+#   theme(legend.position = "none") +
+#   theme(plot.title = element_text(hjust = 0.5))
+# ggsave("Songs_per_Genre.png", plot = g, width = 8, height = 6, units = "in")
 
 
 # # Compare one many songs from each genre are also in other genres
@@ -325,18 +325,30 @@ g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
   theme(legend.position = "none") +
   theme(plot.title = element_text(hjust = 0.5))
 ggsave("Songs_per_Genre_cleaning.png",
-       plot = g, width = 8, height = 6, units = "in")s
+       plot = g, width = 8, height = 6, units = "in")
 
 
 # Once the data is cleaned, the songs are selected.
 # In this case 166 songs will be chosen,
 # so our classification training dataset will have 1002 songs
-n_tracks <- 166
+# n_tracks <- 166
+# for (i in 1:(length(dfs_list))){
+#   random_index <- sample(1:nrow(dfs_list[[i]]), n_tracks, replace = FALSE)
+#   training_dataset <- dfs_list[[i]][random_index, ]
+#   file_name <- paste("new_data/", dfs_names[[i]], "_training.tsv", sep = "")
+#   write.table(training_dataset,
+#               file = file_name, sep = "\t", row.names = FALSE, quote = FALSE)
+# }
 
+# Also we must generate a test dataset
+n_test_tracks <- 34
 for (i in 1:(length(dfs_list))){
-  random_index <- sample(1:nrow(dfs_list[[i]]), n_tracks, replace = FALSE)
-  training_dataset <- dfs_list[[i]][random_index, ]
-  file_name <- paste("new_data/", dfs_names[[i]], "_training.tsv", sep = "")
-  write.table(training_dataset,
-              file = file_name, sep = "\t", row.names = FALSE, quote = FALSE)
+    tsv_path <- paste("EDA_ETL/new_data/", dfs_names[[i]], "_training.tsv", sep = "")
+    genredf <- read_tsv(tsv_path, col_names = col_header, col_types = col_struct)
+    df_for_test <- dfs_list[[i]][!(dfs_list[[i]]$TRACK_ID %in% genredf$TRACK_ID), ]
+    random_index <- sample(1:nrow(df_for_test), n_test_tracks, replace = FALSE)
+    test_dataset <- df_for_test[random_index, ]
+    file_name <- paste("EDA_ETL/new_data/", dfs_names[[i]], "_test.tsv", sep = "")
+    write.table(test_dataset,
+          file = file_name, sep = "\t", row.names = FALSE, quote = FALSE)
 }
