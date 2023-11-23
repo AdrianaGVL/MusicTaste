@@ -2,12 +2,12 @@
 # Author: Adriana Galán
 # Music Taste Project
 ###############################
-# This script is to move every seleted song into the desired folder to process it.
+# This script is to move every selected song into the desired folder to process it.
 
-genre="Techno"
+genre="Alternative"
 new_path="/Users/agv/Estudios/Universidad/Máster/PRDL+MLLB/used_dataset/$genre"
 actual_path="/Users/agv/Estudios/Universidad/Máster/PRDL+MLLB/mtg-jamendo-dataset/realdataset"
-file="new_data/${genre}_training.tsv"
+file="new_data/${genre}_test.tsv"
 echo "$file"
 while IFS=$'\t' read -r track_id artist_id album_id path duration tags; do
     if [[ $path == "PATH" ]]; then

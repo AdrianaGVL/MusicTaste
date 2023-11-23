@@ -1,3 +1,8 @@
+##############################
+#   Author: Adriana Galán
+#   Music Taste Project
+############################
+
 #Libraries
 library(readr)  #read files
 library(ggplot2) # charts

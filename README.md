@@ -14,4 +14,6 @@ tsv files which guarantees that each genre has unique tracks.
 
 Once the selected groups of music files are selected, they can be reorganised into new folders with reorder.sh script.
 
-### Feature Extraction
+#### Feature Extraction
+Because our ML models need objective data, a feature extraction is needed. As we have two parts, 
+classification and regression, two dataframes are generated.

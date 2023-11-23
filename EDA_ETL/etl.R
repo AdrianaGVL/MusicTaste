@@ -69,33 +69,33 @@ dfs_list <- list(pop_df, techno_df,
                  rock_df, classical_df)
 dfs_names <- list("Pop", "Techno", "Dance", "Alternative", "Rock", "Classical")
 
-# # Chart with songs per genre
-# genres_df <- data.frame(DataFrame = unlist(dfs_names),
-#                         CommonIDs = sapply(dfs_list,
-#                         function(df) length(unique(df$TRACK_ID))))
-# g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
-#   geom_bar(stat = "identity") +
-#   geom_text(aes(label = CommonIDs), vjust = -0.5, size = 4) +
-#   theme_minimal() +
-#   labs(
-#     title = "Quantity of tracks per genre",
-#     x = "Genres",
-#     y = "Quantity of tracks in common"
-#   ) +
-#   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-#   theme(legend.position = "none") +
-#   theme(plot.title = element_text(hjust = 0.5))
-# ggsave("Songs_per_Genre.png", plot = g, width = 8, height = 6, units = "in")
+# Chart with songs per genre
+genres_df <- data.frame(DataFrame = unlist(dfs_names),
+                        CommonIDs = sapply(dfs_list,
+                        function(df) length(unique(df$TRACK_ID))))
+g <- ggplot(genres_df, aes(x = DataFrame, y = CommonIDs, fill = DataFrame)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = CommonIDs), vjust = -0.5, size = 4) +
+  theme_minimal() +
+  labs(
+    title = "Quantity of tracks per genre",
+    x = "Genres",
+    y = "Quantity of tracks in common"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(legend.position = "none") +
+  theme(plot.title = element_text(hjust = 0.5))
+ggsave("Songs_per_Genre.png", plot = g, width = 8, height = 6, units = "in")
 
 
-# # Compare one many songs from each genre are also in other genres
-# ## All of them
-# ids_list <- lapply(dfs_list,
-#                    function(df) unique(df$TRACK_ID))
-# common_ids <- Reduce(intersect,
-#                      ids_list)
-# # cat("The quantity of tracks in common is:",
-#        length(common_ids), "\n")
+# Compare one many songs from each genre are also in other genres
+## All of them
+ids_list <- lapply(dfs_list,
+                   function(df) unique(df$TRACK_ID))
+common_ids <- Reduce(intersect,
+                     ids_list)
+# cat("The quantity of tracks in common is:",
+       length(common_ids), "\n")
 
 ## Four by four
 in_common_counts <- list()
