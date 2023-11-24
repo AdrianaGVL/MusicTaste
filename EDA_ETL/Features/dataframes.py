@@ -17,9 +17,9 @@ parent_path = str(Path(Path.cwd()).parents[6])
 data_path = main_path = f'{parent_path}/Estudios/Universidad/Máster/PRDL+MLLB/used_dataset'
 genres = [x for x in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, x))]
 # regression_features = [f"MFCC {num} mean" for num in range(10, 19)] + [f"MFCC {num} min" for num in range(2, 19)] + [f"MFCC {num} max" for num in range(2, 19)]
-regression_features = ['MFCC 1 mean', 'MFCC 1 min',' MFCC 1 max', 'MFCC 10 mean', 'MFCC 10 min', 'MFCC 10 max', 'MFCC 20 mean', 'MFCC 20 min', 'MFCC 20 max']
-classification_features = ['Tempo', 'Beats per song', 'Danceability', 'Loudness (dB)', 'Energy (dB)', 'Spectral Rolloff', 'Spectral Centroid']
-features = classification_features + regression_features
+freq_features = ['MFCC 10 mean', 'MFCC 10 min', 'MFCC 10 max', 'Average Pitch', 'Salience']
+others_features = ['Tempo', 'Beats_song', 'Danceability', 'Loudness', 'Energy', 'Spectral Rolloff', 'Spectral Centroid']
+features = freq_features + others_features
 
 # DataFrames creation
 # regresdf = pd.DataFrame(columns=["Genre"] + regression_features)
@@ -51,8 +51,6 @@ for genre in genres:
         # meanMFCC, minMFCC, maxMFCC = fx.get_mel(audio, sr)
         # new_row = [genre] + meanMFCC.tolist() + minMFCC.tolist() + maxMFCC.tolist()
         MFCCs = fx.get_mel(audio, sr)
-        # new_row_r = [genre] + MFCCs
-        # regresdf.loc[len(regresdf.index), :] = new_row_r
 
         # Loudness
         loudness = fx.get_loudness(audio)
@@ -76,30 +74,42 @@ for genre in genres:
         # Spectral Centroid
         centroid = fx.get_spect_centroid(spectrum)
 
+        # Pitch
+        pitch, mean_pitch = fx.get_pitch(spectrum)
+
+        # Salience
+        salience = fx.get_pitch_salience(spectrum)
+
+        # Regression dataframe
+        new_row_r = [genre] + MFCCs + [mean_pitch, salience]
+        # regresdf.loc[len(regresdf.index), :] = new_row_r
         # Classification dataframe
         new_row_c = [genre, tempo, total_beats, danceability, loudness, energy, roff, centroid]
         # classidf.loc[len(classidf.index), :] = new_row_c
 
         # Whole dataframe
-        df.loc[len(df.index), :] = new_row_c + MFCCs
-
-# General dataframe
-df_path = f'{str(Path(Path.cwd()))}/new_data'
-df.to_csv(f'{df_path}/df.csv', sep=';', decimal=",", index=False)
+        df.loc[len(df.index), :] = new_row_c + new_row_r
 
 # Assing a number to each genre
 # regresdf.Genre = regresdf.Genre.map({'Alternative': 0, 'Pop': 1, 'Techno': 2, 'Dance': 3, 'Rock': 4, 'Classical': 5})
 # classidf.Genre = classidf.Genre.map({'Alternative': 0, 'Pop': 1, 'Techno': 2, 'Dance': 3, 'Rock': 4, 'Classical': 5})
 
-# # Normalise each column with Z-score (mean =, std = 1)
-# standard_scaler = StandardScaler()
+# Normalise each column with Z-score (mean =, std = 1)
+standard_scaler = StandardScaler()
+# General dataset
+for feat in features:
+    df[feat] = standard_scaler.fit_transform(df[[feat]])
 # #Regression
-# cols_to_norm = regression_features
-# regresdf[cols_to_norm] = standard_scaler.fit_transform(regresdf[cols_to_norm])
+# for feat in freq_features:
+#     regresdf[feat] = standard_scaler.fit_transform(regresdf[[feat]])
 # # Classification
-# cols_to_norm = classification_features
-# classidf[cols_to_norm] = standard_scaler.fit_transform(classidf[cols_to_norm])
-#
+# for feat in others_features:
+#     classidf[feat] = standard_scaler.fit_transform(classidf[[feat]])
+
+# General dataframe
+df_path = f'{str(Path(Path.cwd()))}/new_data'
+df.to_csv(f'{df_path}/df.csv', sep=';', decimal=",", index=False)
+
 #  # Save both dataframes
 # regressdf_path = f'{str(Path(Path.cwd()))}/new_data'
 # classidf_path = f'{str(Path(Path.cwd()))}/new_data'

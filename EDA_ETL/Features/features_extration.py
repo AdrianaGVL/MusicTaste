@@ -7,6 +7,7 @@
 import librosa
 import numpy as np
 import essentia.standard as ess
+import statistics
 from EDA_ETL.Features import charts as ch
 
 
@@ -34,19 +35,19 @@ def get_mel(track, sr):
     mfcc20 = mfccs[19, :]
 
     # Mean, max. and min
-    mfcc1_mean = np.mean(mfcc1, axis=0)
-    mfcc1_min = np.min(mfcc1, axis=0)
-    mfcc1_max = np.max(mfcc1, axis=0)
+    # mfcc1_mean = np.mean(mfcc1, axis=0)
+    # mfcc1_min = np.min(mfcc1, axis=0)
+    # mfcc1_max = np.max(mfcc1, axis=0)
 
     mfcc10_mean = np.mean(mfcc1, axis=0)
     mfcc10_min = np.min(mfcc1, axis=0)
     mfcc10_max = np.max(mfcc1, axis=0)
 
-    mfcc20_mean = np.mean(mfcc1, axis=0)
-    mfcc20_min = np.min(mfcc1, axis=0)
-    mfcc20_max = np.max(mfcc1, axis=0)
+    # mfcc20_mean = np.mean(mfcc1, axis=0)
+    # mfcc20_min = np.min(mfcc1, axis=0)
+    # mfcc20_max = np.max(mfcc1, axis=0)
 
-    return [mfcc1_mean, mfcc1_min, mfcc1_max, mfcc10_mean, mfcc10_min, mfcc10_max, mfcc20_mean, mfcc20_min, mfcc20_max]
+    return [mfcc10_mean, mfcc10_min, mfcc10_max]
 
 
 # Spectrogram
@@ -109,3 +110,12 @@ def get_spect_centroid(spectrum):
     return centroid
 
 
+def get_pitch_salience(spectrum):
+    salience = ess.PitchSalience()(spectrum)
+    return salience
+
+
+def get_pitch(spectrum):
+    pitch = ess.PitchMelody()(spectrum)
+    average_pitch = statistics.mean(pitch)
+    return pitch, average_pitch
