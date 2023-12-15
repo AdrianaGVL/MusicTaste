@@ -15,39 +15,46 @@ from EDA_ETL.Features import charts as ch
 def get_mel(track, sr):
     mfccs = librosa.feature.mfcc(y=track, sr=sr, n_mfcc=20)
 
-    # Covariance and Correlation Matrices
-    # covariance_matrix = np.cov(mfccs)
-    # correlation_matrix = np.corrcoef(mfccs)
+    # Covariance and Correlation Normalised Matrices
+    covariance_matrix = np.cov(mfccs)
+    covariance_matrix_normalized = np.nan_to_num(
+        covariance_matrix / np.sqrt(np.outer(np.diag(covariance_matrix), np.diag(covariance_matrix))))
+    correlation_matrix = np.corrcoef(mfccs)
+    correlation_matrix_normalized = np.nan_to_num(
+        correlation_matrix / np.sqrt(np.outer(np.diag(correlation_matrix), np.diag(correlation_matrix))))
 
-    # Feature Study
-    # Because the huge amount of data each MFCC coefficient contains
-    # a study of how ir correlated is done to see if it's possible
-    # to reduce it to some values.
-    # ch.cov_corr(mfccs.shape[0], correlation_matrix, 'Correlation')
-    # ch.cov_corr(mfccs.shape[0], covariance_matrix, 'Covariance')
+    # # Feature Study
+    # # Because the huge amount of data each MFCC coefficient contains
+    # # a study of how ir correlated is done to see if it's possible
+    # # to reduce it to some values.
+    # ch.cov_corr(mfccs.shape[0], correlation_matrix_normalized, 'Correlation', safe=True)
+    # ch.cov_corr(mfccs.shape[0], covariance_matrix_normalized, 'Covariance', safe=True)
 
-    # Selection of desired MFCC coefficients
-    # These are the ones selected because first and last coefficient
-    # are the most significantly different. MFCC 10 coefficient
-    # value is selected because is just in the middle.
-    mfcc1 = mfccs[0, :]
-    mfcc10 = mfccs[9, :]
-    mfcc20 = mfccs[19, :]
+    # # Selection of desired MFCC coefficients
+    # # These are the ones selected because first and last coefficient
+    # # are the most significantly different. MFCC 10 coefficient
+    # # value is selected because is just in the middle.
+    # mfcc1 = mfccs[0, :]
+    # mfcc10 = mfccs[9, :]
+    # mfcc20 = mfccs[19, :]
 
     # Mean, max. and min
     # mfcc1_mean = np.mean(mfcc1, axis=0)
     # mfcc1_min = np.min(mfcc1, axis=0)
     # mfcc1_max = np.max(mfcc1, axis=0)
 
-    mfcc10_mean = np.mean(mfcc1, axis=0)
-    mfcc10_min = np.min(mfcc1, axis=0)
-    mfcc10_max = np.max(mfcc1, axis=0)
+    # mfcc10_mean = np.mean(mfcc1, axis=0)
+    # mfcc10_min = np.min(mfcc1, axis=0)
+    # mfcc10_max = np.max(mfcc1, axis=0)
 
     # mfcc20_mean = np.mean(mfcc1, axis=0)
     # mfcc20_min = np.min(mfcc1, axis=0)
     # mfcc20_max = np.max(mfcc1, axis=0)
 
-    return [mfcc10_mean, mfcc10_min, mfcc10_max]
+    # Just the first value of each MFCC
+    mfcc_first = mfccs[:, 0]
+
+    return mfcc_first
 
 
 # Spectrogram
@@ -75,7 +82,7 @@ def get_tempo(track, sr):
     tempo, beat_frames = librosa.beat.beat_track(y=track, sr=sr)
     beat_times = librosa.frames_to_time(beat_frames, sr=sr)
 
-    return tempo, beat_times
+    return beat_times
 
 
 def get_loudness(track):
@@ -87,6 +94,7 @@ def get_loudness(track):
 def get_danceability(track):
     danceability = ess.Danceability()(track)
     return danceability
+
 
 
 def get_energy(track):
@@ -110,12 +118,15 @@ def get_spect_centroid(spectrum):
     return centroid
 
 
-def get_pitch_salience(spectrum):
-    salience = ess.PitchSalience()(spectrum)
-    return salience
+def marks(leng, percentage):
+    # Depending on the genre a percentage of the marks will be great ones
+    high_marks = np.random.normal(loc=8.5, scale=1.5, size=int(leng * percentage))
+    high_marks = np.clip(high_marks, 7, 10)
+    # The rest will  be bas ones
+    low_marks = np.random.normal(loc=3, scale=1.5, size=int(leng * (1-percentage)))
+    low_marks = np.clip(low_marks, 0, 6)
 
+    marks = np.concatenate([high_marks, low_marks])
+    np.random.shuffle(marks)
 
-def get_pitch(spectrum):
-    pitch = ess.PitchMelody()(spectrum)
-    average_pitch = statistics.mean(pitch)
-    return pitch, average_pitch
+    return marks

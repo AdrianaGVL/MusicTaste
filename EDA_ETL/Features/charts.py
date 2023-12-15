@@ -7,6 +7,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import librosa
+from pathlib import Path
 
 
 def cov_corr(num_mfcc, matrix, cov_or_corr, safe=False, somethingelse=""):
@@ -15,15 +16,16 @@ def cov_corr(num_mfcc, matrix, cov_or_corr, safe=False, somethingelse=""):
 
     # Covariance Charts
     plt.figure(figsize=(20, 18))
-    plt.imshow(matrix, cmap='viridis', origin='lower', aspect='auto')
+    plt.imshow(matrix, cmap='coolwarm_r', origin='lower', aspect='auto')
     plt.xticks(np.arange(num_mfcc), mfcc_labels, rotation=45)
     plt.yticks(np.arange(num_mfcc), mfcc_labels)
     plt.title(f'{cov_or_corr} Matrix between MFCCs vales')
     plt.colorbar(label=f'{cov_or_corr} Value')
-    plt.show()
 
     if safe:
-        plt.savefig(f'/new_data/{cov_or_corr}_matrix{somethingelse}.png')
+        plt.savefig(f'{str(Path(Path.cwd()))}/new_data/{cov_or_corr}_matrix{somethingelse}.png')
+
+    plt.show()
 
     return
 
