@@ -27,4 +27,3 @@ Everything is in the same loop for, just need to pass the dataframe path and whi
 As the target is to predict if a song will be liked by the user, the variable to predict will be the song's mark that the user have put to it.
 In this case the chosen models have been Ridge, KNN and Decision Tree. In this case cross validatin is used in the last two.
 For regression are two functions, one for ridge, jusst need to pass the dataframe path, and for KNN & Decision Tree, which also needs the model selected.
-#### Clustering

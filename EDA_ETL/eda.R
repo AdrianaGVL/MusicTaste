@@ -22,7 +22,7 @@ library(openxlsx)
 
 # Import data
 df_path <- file.path("EDA_ETL/Features/new_data")
-df <- read.csv(file.path(df_path, "df_marks.csv"),
+df <- read.csv(file.path(df_path, "df_energy.csv"),
                sep = ";", dec = ",", header = TRUE)
 
 # # Visualization data types
@@ -32,7 +32,7 @@ df <- read.csv(file.path(df_path, "df_marks.csv"),
 
 # Change some notation
 for (col in colnames(df)) {
-  new_col_name <- gsub("\\.", "_", col)
+  new_col_name <- gsub("\\.", " ", col)
   colnames(df)[colnames(df) == col] <- new_col_name
 }
 
@@ -50,7 +50,8 @@ df <- df %>%
 # print(feats)
 # cols <- names(df)
 # no_num <- "Genre"
-# features <- cols[!(cols %in% no_num)]
+# feats_freq <- c('Genre', 'Beats_song', 'Danceability', 'Loudness', 'Spectral_Rolloff', 'Spectral Centroid')
+# features <- cols[!(cols %in% feats_freq)]
 # for (feat in features) {
 #   filename <- paste("EDA_ETL/Features/new_data/boxplot_", gsub(" ", "_", feat), ".png",sep = "")
 #   png(filename, width = 800, height = 600, units = "px", pointsize = 12)
@@ -64,25 +65,24 @@ df <- df %>%
 #   freq_features[num] <- paste("MFCC", num, sep = "_")
 # }
 # feats_not_freq <- setdiff(names(df), freq_features)
-# feats_freq <- setdiff(names(df), c('Genre', 'Beats_song', 'Danceability', 'Loudness', 'Spectral_Rolloff', 'Spectral Centroid'))
-# # feats_not_freq <- setdiff(names(df), c('Genre', 'MFCC 1', 'MFCC 2','MFCC 3', 'MFCC 4', 'MFCC 10 min', 'MFCC 10 max', 'MFCC 20 mean', 'MFCC 20 min', 'MFCC 20 max'))
+feats_freq <- setdiff(names(df), c('Genre', 'Beats_song', 'Danceability', 'Loudness', 'Spectral_Rolloff', 'Spectral Centroid'))
 # scatter_matrix <- ggpairs(select(df, all_of(feats_freq)),
 #                                  diag = list(continuous = "densityDiag"),
 #                                  upper = list(continuous = wrap("cor", digits = 2)),
 #                                  axisLabels = "none")
 # scatter_matrix <- scatter_matrix <- scatter_matrix + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-# filename <- "EDA_ETL/Features/new_data/scatter_matrix_freq_MFCC_MARK.png"
+# filename <- "EDA_ETL/Features/new_data/scatter_matrix_freq_MFCC_Means.png"
 # ggsave(filename, scatter_matrix, width = 12, height = 10, units = "in", dpi = 300)
 
 
-# # Correlation between features
-# subset_df <- df[, feats_not_freq]
-# correlation_matrix <- cor(subset_df)
-# corrplot(correlation_matrix, method = "color", tl.col = "black", tl.srt = 45)
-# filename <- "EDA_ETL/Features/new_data/correlation_Nootfreq_MARK.png"
-# png(filename, width = 800, height = 600, units = "px", pointsize = 12)
-# corrplot(correlation_matrix, method = "color", tl.col = "black", tl.srt = 45)
-# dev.off()
+# Correlation between features
+subset_df <- df[, feats_freq]
+correlation_matrix <- cor(subset_df)
+corrplot(correlation_matrix, method = "color", tl.col = "black", tl.srt = 45)
+filename <- "EDA_ETL/Features/new_data/correlation_freq_Energy.png"
+png(filename, width = 800, height = 600, units = "px", pointsize = 12)
+corrplot(correlation_matrix, method = "color", tl.col = "black", tl.srt = 45)
+dev.off()
 
 
 # # Relation Between features and genres - ANOVA

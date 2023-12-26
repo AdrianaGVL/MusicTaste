@@ -16,18 +16,13 @@ from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn import tree
 import matplotlib.pyplot as plt
-import seaborn as sns
-
-# Class variables for models evaluation
-m_mse = list()
-m_r2 = list()
 
 
 def load_data(data_path, train_test=False):
     # CSVs reading and training - test data generation
     data = pd.read_csv(data_path, sep=';', decimal=",", index_col=None)
-    y = data.iloc[:, -1]
-    X = data.iloc[:, 6:-1]
+    y = data.iloc[:, 6:7]
+    X = data.iloc[:, 7:28]
     if train_test:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         return X_train, X_test, y_train, y_test
@@ -36,16 +31,15 @@ def load_data(data_path, train_test=False):
 
 
 # Ridge Regression
-def ridge_regress(data_path):
+def ridge_regress(data_path, plots=False):
     cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
     X, y, data = load_data(data_path)
     # Enumerate splits
     outer_results = list()
-    outer_r2 = list()
     # Outer loop
-    for train, test in cv_outer.split(data):
+    for train, test in cv_outer.split(data.iloc[:, 6:28]):
         # Split data
-        X_train, X_test = X.iloc[train, 7:-1], X.iloc[test, 7:-1]
+        X_train, X_test = X.iloc[train, 0:28], X.iloc[test, 0:28]
         y_train, y_test = y.iloc[train], y.iloc[test]
 
         # Model selection
@@ -60,41 +54,48 @@ def ridge_regress(data_path):
         r2 = r2_score(y_test, y_pred)
 
         # Store result
-        outer_results.append(mse)
-        outer_r2.append(r2)
+        outer_results.append({'Model': 'Ridge', 'MSE': mse, 'R2': r2})
 
         # Plot results
-        plt.clf()
-        plt.scatter(y_test, y_pred, color='red')
-        plt.xlabel('Real Values')
-        plt.ylabel('Predicted Values')
-        plt.title('Scatter Matrix - Ridge Regression')
-        plt.savefig(f'ML_models/new_data/Ridge/Alpha_{r2}.png')
+        if plots:
+            plt.clf()
+            plt.plot([min(np.array(y_test)), max(np.array(y_test))], [min(y_pred), max(y_pred)], linestyle='--',
+                     color='black',
+                     label='Perfect Prediction')
+            plt.scatter(y_test, y_pred, color='purple')
+            plt.xlabel('Real Values')
+            plt.ylabel('Predicted Values')
+            plt.title('Scatter Matrix - Ridge Regression')
+            plt.savefig(f'ML_models/new_data/Ridge/Alpha_{r2}.png')
 
         # # Report progress
-        print('- mse=%.3f,r2=%.3f, alpha=%.3f,cfg=%s' % (mse, r2, model.alpha_, [model.coef_, model.intercept_]))
+        print('- mse=%.3f,r2=%.3f, alpha=%.3f' % (mse, r2, model.alpha_,))
 
     # Summarize the estimated performance of the model
-    print('MSE: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
-    print('R2: %.3f (%.3f)' % (mean(outer_r2), std(outer_r2)))
-    m_mse.append(mean(outer_results))
-    m_r2.append(mean(outer_r2))
+    mse_values = [item['MSE'] for item in outer_results]
+    r2_values = [item['R2'] for item in outer_results]
+    print('MSE: %.3f (%.3f)' % (mean(mse_values), std(mse_values)))
+    print('R2: %.3f (%.3f)' % (mean(r2_values), std(r2_values)))
 
-    return m_mse, m_r2
+    return outer_results
 
 
 # KNN & Decision Tree Regression
-def knn_regress(data_path, modelML):
+def cross_validation(data_path, modelML, plots=False):
+    num_knn = 0
     cv_outer = KFold(n_splits=10, shuffle=True, random_state=1)
     X, y, data = load_data(data_path)
     # Enumerate splits
     outer_results = list()
-    outer_r2 = list()
     # Outer loop
-    for train, test in cv_outer.split(X):
+    for train, test in cv_outer.split(data.iloc[:, 6:28]):
         # Split data
-        X_train, X_test = X.iloc[train, 7:-1], X.iloc[test, 7:-1]
-        y_train, y_test = y.iloc[train], y.iloc[test]
+        X_train, X_test = X.iloc[train, 0:20].astype(float), X.iloc[test, 0:20].astype(float)
+        a1 = X_train.dtypes
+        a2 = X_test.dtypes
+        y_train, y_test = y.iloc[train].astype(float), y.iloc[test].astype(float)
+        a3 = y_train.dtypes
+        a4 = y_test.dtypes
 
         # Configure the cross-validation procedure
         cv_inner = KFold(n_splits=3, shuffle=True, random_state=1)
@@ -107,7 +108,7 @@ def knn_regress(data_path, modelML):
             model = KNeighborsRegressor()
             # Search Variables definition
             space['n_neighbors'] = list(range(2, 100))
-        elif modelML == 'Decision Tree':
+        elif modelML == 'Regression Tree':
             # Model selection
             model = DecisionTreeRegressor()
             # Search Variables definition
@@ -129,40 +130,39 @@ def knn_regress(data_path, modelML):
         r2 = r2_score(y_test, y_pred)
 
         # Store result for the outer one
-        outer_results.append(mse)
-        outer_r2.append(r2)
+        outer_results.append({'Model': modelML, 'MSE': mse, 'R2': r2})
 
         # Plot results
         if modelML == 'KNN':
-            plt.clf()
-            plt.scatter(y_test, y_pred, color='red')
-            plt.savefig(f'ML_models/new_data/KNN/{model.n_neighbors}_Neighbours.png')
-        elif modelML == 'Decision Tree':
-            fig = plt.figure(figsize=(25, 20))
-            _ = tree.plot_tree(best_model,
-                               feature_names=data.columns,
-                               filled=True)
+            if plots:
+                num_knn += 1
+                plt.clf()
+                plt.plot([min(np.array(y_test)), max(np.array(y_test))], [min(y_pred), max(y_pred)], linestyle='--', color='black',
+                         label='Perfect Prediction')
+                plt.scatter(y_test, y_pred, color='blue')
+                plt.xlabel('Real Values')
+                plt.ylabel('Predicted Values')
+                plt.title('Scatter Matrix - KNN')
+                plt.savefig(f'ML_models/new_data/KNN/{best_model}_{num_knn}.png')
 
-        # Report progress
-        print('- mse=%.3f,r2=%.3f, K_neightbours=%s' % (mse, r2, result.best_params_))
+            # Report progress
+            print('- mse=%.3f,r2=%.3f, K_neightbours=%s' % (mse, r2, result.best_params_))
+
+        elif modelML == 'Regression Tree':
+            if plots:
+                fig = plt.figure(figsize=(25, 20))
+                _ = tree.plot_tree(best_model,
+                                   feature_names=X.iloc[:, 0:20].columns,
+                                   filled=True)
+                plt.savefig(f'ML_models/new_data/RegressTree/{best_model}.png')
+
+            # Report progress
+            print('- mse=%.3f,r2=%.3f, Tree_Params=%s' % (mse, r2, result.best_params_))
 
     # Summarize the estimated performance of the model
-    print('MSE: %.3f (%.3f)' % (mean(outer_results), std(outer_results)))
-    print('R2: %.3f (%.3f)' % (mean(outer_r2), std(outer_r2)))
-    m_mse.append(mean(outer_results))
-    m_r2.append(mean(outer_r2))
+    mse_values = [item['MSE'] for item in outer_results]
+    r2_values = [item['R2'] for item in outer_results]
+    print('MSE: %.3f (%.3f)' % (mean(mse_values), std(mse_values)))
+    print('R2: %.3f (%.3f)' % (mean(r2_values), std(r2_values)))
 
-    return m_mse, m_r2
-
-
-def models_results(mses, mr2s):
-    compare = pd.DataFrame(columns=['Model', 'MSE', 'R2'])
-    compare['Model'] = ['Ridge', 'KNN', 'Decision Tree']
-    compare['MSE'] = mses
-    compare['R2'] = mr2s
-
-    print(compare)
-    sns.scatterplot(data=compare, x="MSE", y="R2", hue='Model', style="Model", s=150).set_title(
-        'Regression models compared')
-
-    return
+    return outer_results

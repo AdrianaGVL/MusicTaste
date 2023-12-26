@@ -14,6 +14,7 @@ from EDA_ETL.Features import charts as ch
 # Mel-spectrum
 def get_mel(track, sr):
     mfccs = librosa.feature.mfcc(y=track, sr=sr, n_mfcc=20)
+    mfccs_mean = np.mean(mfccs, axis=1)
 
     # Covariance and Correlation Normalised Matrices
     covariance_matrix = np.cov(mfccs)
@@ -52,9 +53,9 @@ def get_mel(track, sr):
     # mfcc20_max = np.max(mfcc1, axis=0)
 
     # Just the first value of each MFCC
-    mfcc_first = mfccs[:, 0]
+    # mfcc_first = mfccs[:, 0]
 
-    return mfcc_first
+    return mfccs_mean
 
 
 # Spectrogram

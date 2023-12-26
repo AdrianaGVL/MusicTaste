@@ -1,9 +1,11 @@
 ##############################
-#   Author:: Adriana Galáns
+#   Author:: Adriana Galán
 #   Music Taste Project
 ############################
 
 # Libraries
+import os
+import time
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -14,10 +16,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, RocCurveDisplay, \
-    classification_report, auc, roc_curve, roc_auc_score
-from sklearn.preprocessing import label_binarize
-from itertools import cycle
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 
 
 # Data loading
@@ -25,7 +24,7 @@ def load_data(data_path, train_test=False, plots=False):
     # CSVs reading and training - test data generation
     data = pd.read_csv(data_path, sep=';', decimal=",", index_col=None)
     y = data.iloc[:, 0]
-    X = data.iloc[:, 2:6].apply(pd.to_numeric, errors='coerce')
+    X = data.iloc[:, 1:6].apply(pd.to_numeric, errors='coerce')
 
     # Represent data
     if plots:
@@ -64,9 +63,12 @@ def qda_model(data_path):
     y_train_encoded = np.argmax(encoder.fit_transform(y_train_reshaped).toarray(), axis=1)
     y_test_encoded = np.argmax(encoder.transform(y_test_reshaped).toarray(), axis=1)
 
+    init = time.time()
     # Create and train the QDA model
     model = QuadraticDiscriminantAnalysis()
     model.fit(X_train, y_train_encoded)
+
+    end = time.time()
 
     # Make predictions on the test set
     y_pred = model.predict(X_test)
@@ -77,7 +79,7 @@ def qda_model(data_path):
     recall = recall_score(y_test_encoded, y_pred, average='macro', zero_division=1)
     f1 = f1_score(y_test_encoded, y_pred, average='macro', zero_division=1)
 
-    results.append({'Accuracy': acc, 'Precision': precision, 'Recall': recall, 'F1_score': f1})
+    results.append({'Model': 'QDA' , 'Accuracy': acc, 'Precision': precision, 'Recall': recall, 'F1_score': f1})
     print(f'>acc={acc:.3f}, precision={precision:.3f}, rll={recall:.3f}, f1={f1:.3f}')
 
     cm = confusion_matrix(y_test_encoded, y_pred)
@@ -94,13 +96,15 @@ def qda_model(data_path):
 
 # Cross Validation for two Random Forest & Decision Tree
 def cross_valid_models(data_path, modelML):
+    num_trees = 0
+    num_forests = 0
     cv_outer = KFold(n_splits=10, shuffle=True, random_state=2)
     X, y, data = load_data(data_path)
     # Enumerate splits
     outer_results = list()
     for train, test in cv_outer.split(data.iloc[:, 0:6]):
         # Split data
-        X_train, X_test = X.iloc[train, 1:6], X.iloc[test, 1:6]
+        X_train, X_test = X.iloc[train, 0:6], X.iloc[test, 0:6]
         y_train, y_test = y.iloc[train], y.iloc[test]
 
         # Configure the cross-validation procedure
@@ -114,12 +118,13 @@ def cross_valid_models(data_path, modelML):
             model = RandomForestClassifier(random_state=1)
             # Search Variables definition
             space = {
-                'n_estimators': [50, 100, 150],
-                'max_depth': [None, 10, 20, 30],
+                'n_estimators': [50, 70, 110],
+                'max_depth': [5, 10, 20, 30],
                 'min_samples_split': [2, 5, 10],
                 'min_samples_leaf': [1, 2, 4]
             }
-        elif modelML == 'Decision Tree':
+            export_name = 'RF'
+        elif modelML == 'Classification Tree':
             # Model selection
             model = DecisionTreeClassifier(random_state=1)
             # Search Variables definition
@@ -129,6 +134,7 @@ def cross_valid_models(data_path, modelML):
                 {'max_leaf_nodes': list(range(2, 100))},
                 {'min_samples_split': [2, 3, 4]}
             ]
+            export_name = 'DT'
 
         # Search definition
         search = GridSearchCV(model, space, scoring='accuracy', cv=cv_inner, refit=True)
@@ -147,7 +153,7 @@ def cross_valid_models(data_path, modelML):
         f1 = f1_score(y_test, y_pred, average='macro', zero_division=1)
 
         # Store result for the outer one
-        outer_results.append({'Accuracy': acc, 'Precision': precision, 'Recall': recall, 'F1_score': f1})
+        outer_results.append({'Model': modelML, 'Accuracy': acc, 'Precision': precision, 'Recall': recall, 'F1_score': f1})
 
         if modelML == 'Random Forest':
             # Feature Importance
@@ -170,7 +176,8 @@ def cross_valid_models(data_path, modelML):
             ax.spines['bottom'].set_visible(True)
             ax.spines['left'].set_visible(True)
             ax.set_xlim(0, max(feature_importance) * 1.1)
-            plt.savefig(f"ML_models/new_data/Forest/feature_importance.png")
+            os.makedirs(f"ML_models/new_data/Forest/{num_forests}", exist_ok=True)
+            plt.savefig(f"ML_models/new_data/Forest/{num_forests}/feature_importance.png")
 
             for tree_index, tree_estimator in enumerate(best_model.estimators_):
                 plt.figure(figsize=(192, 108))
@@ -178,20 +185,22 @@ def cross_valid_models(data_path, modelML):
                           class_names=['Alternative', 'Pop', 'Techno', 'Dance', 'Rock', 'Classical'],
                           filled=True, rounded=True)
                 plt.title(f"Decision Tree {tree_index}", fontweight='bold')
-                plt.savefig(f"ML_models/new_data/Forest/{tree_index}.png")
+                plt.savefig(f"ML_models/new_data/Forest/{num_forests}/{tree_index}.png")
+                plt.close()
 
-        elif modelML == 'Decision Tree':
+        elif modelML == 'Classification Tree':
+            num_trees += 1
             fig = plt.figure(figsize=(192, 108))
             _ = tree.plot_tree(best_model,
                                feature_names=['Beats per song', 'Danceability', 'Loudness (dB)',
                                               'Spectral Rolloff', 'Spectral Centroid'],
                                class_names=['Alternative', 'Pop', 'Techno', 'Dance', 'Rock', 'Classical'],
                                filled=True)
-            plt.savefig(f"ML_models/new_data/Tree/{best_model}.png")
+            plt.savefig(f"ML_models/new_data/ClassifTree/{best_model}_{num_trees}.png")
 
         # Report progress
-        report = classification_report(y_test, y_pred)
         print(f'>acc={acc:.3f}, est={result.best_score_:.3f}, cfg={result.best_params_}')
         print(f'>precision={precision:.3f}, rll={recall:.3f}, f1={f1:.3f}')
+        num_forests += 1
 
     return outer_results
