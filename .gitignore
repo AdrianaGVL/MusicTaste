@@ -1,8 +1,8 @@
 EDA_ETL/new_data/
 EDA_ETL/Features/new_data/
-ML_models/new_data
-!ML_models/new_data/Forest/2
-!ML_models/new_data/RegressTree
+#ML_models/new_data
+#!ML_models/new_data/Forest/2
+#!ML_models/new_data/RegressTree
 Music_Taste.pdf
 Papers/
 images_report/
