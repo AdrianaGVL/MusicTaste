@@ -14,7 +14,7 @@ import features_extration as fx
 
 # Data paths
 parent_path = str(Path(Path.cwd()).parents[6])
-data_path = main_path = f'{parent_path}/Estudios/Universidad/Máster/PRDL+MLLB/used_dataset'
+data_path = f'{parent_path}/Estudios/Universidad/Máster/PRDL+MLLB/used_dataset'
 genres = [x for x in os.listdir(data_path) if os.path.isdir(os.path.join(data_path, x))]
 freq_features = [f"MFCC {num}" for num in range(1, 21)]
 others_features = ['Beats_song', 'Danceability', 'Loudness', 'Spectral_Rolloff', 'Spectral Centroid', 'Energy']
@@ -22,8 +22,6 @@ features = others_features + freq_features # + ['Mark']
 # genre_preferences = {'Alternative': 0.7, 'Pop': 0.8, 'Techno': 0.4, 'Rock': 0.3, 'Dance': 0.6, 'Classical': 0.2}
 
 # DataFrames creation
-# regresdf = pd.DataFrame(columns=["Genre"] + regression_features)
-# classidf = pd.DataFrame(columns=["Genre"] + classification_features)
 df = pd.DataFrame(columns=["Genre"] + features)
 
 # Add data to the  DataFrames
@@ -75,15 +73,10 @@ for genre in genres:
 
         # Regression dataframe
         new_row_r = MFCCs.tolist()
-        # regresdf.loc[len(regresdf.index), :] = new_row_r
         # Classification dataframe
         new_row_c = [genre, total_beats, danceability, loudness, roff, centroid, energy]
-        # classidf.loc[len(classidf.index), :] = new_row_c
 
         # Whole dataframe
-        # row_to_add = []
-        # row_to_add.append(new_row_c)
-        # row_to_add.append(new_row_c)
         df.loc[len(df.index), :] = new_row_c + new_row_r
 
 # Dataframe - With Energy

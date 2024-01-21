@@ -7,7 +7,6 @@
 import librosa
 import numpy as np
 import essentia.standard as ess
-import statistics
 from EDA_ETL.Features import charts as ch
 
 
@@ -30,30 +29,6 @@ def get_mel(track, sr):
     # # to reduce it to some values.
     # ch.cov_corr(mfccs.shape[0], correlation_matrix_normalized, 'Correlation', safe=True)
     # ch.cov_corr(mfccs.shape[0], covariance_matrix_normalized, 'Covariance', safe=True)
-
-    # # Selection of desired MFCC coefficients
-    # # These are the ones selected because first and last coefficient
-    # # are the most significantly different. MFCC 10 coefficient
-    # # value is selected because is just in the middle.
-    # mfcc1 = mfccs[0, :]
-    # mfcc10 = mfccs[9, :]
-    # mfcc20 = mfccs[19, :]
-
-    # Mean, max. and min
-    # mfcc1_mean = np.mean(mfcc1, axis=0)
-    # mfcc1_min = np.min(mfcc1, axis=0)
-    # mfcc1_max = np.max(mfcc1, axis=0)
-
-    # mfcc10_mean = np.mean(mfcc1, axis=0)
-    # mfcc10_min = np.min(mfcc1, axis=0)
-    # mfcc10_max = np.max(mfcc1, axis=0)
-
-    # mfcc20_mean = np.mean(mfcc1, axis=0)
-    # mfcc20_min = np.min(mfcc1, axis=0)
-    # mfcc20_max = np.max(mfcc1, axis=0)
-
-    # Just the first value of each MFCC
-    # mfcc_first = mfccs[:, 0]
 
     return mfccs_mean
 

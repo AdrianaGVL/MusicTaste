@@ -2,8 +2,6 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from tabulate import tabulate
-import os
 
 # Load dataset
 data = pd.read_csv('Features/new_data/df_enorm.csv', sep=';', decimal=",", index_col=None)
